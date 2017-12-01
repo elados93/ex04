@@ -13,6 +13,7 @@ public:
     int sendPoint(int arg1, char op, int arg2);
     int getPriority();
     void stop();
+    int getClientSocket() const;
 
 private:
     const char *serverIP;

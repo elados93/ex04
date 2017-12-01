@@ -91,6 +91,10 @@ int Client::getPriority() {
     return priority;
 }
 
+int Client::getClientSocket() const {
+    return clientSocket;
+}
+
 
 
 

@@ -10,7 +10,7 @@
 RemoteGameManager::RemoteGameManager(GameState &gameState, Player &player1, Player &player2, Printer &printer,
                                      GameRules &gameRules, int socket1) :
                                      GameManager(gameState, player1, player2,
-                                                 printer, gameRules, false), socket(socket1) {}
+                                                 printer, gameRules, false), Client(client1) {}
 
 void RemoteGameManager::run() {
     status status1 = checkStatus();
@@ -46,7 +46,7 @@ void RemoteGameManager::run() {
     delete (lastMove);
 
     char buffer[4] = "END";
-    int n = write(socket, &buffer, sizeof(buffer));
+    int n = write(clientDetails.getClientSocket(), &buffer, sizeof(buffer));
     if (n == -1)
         throw "Error sending end of game to server";
 }
@@ -73,17 +73,15 @@ void RemoteGameManager::playOneTurn() {
         }
 
         lastMove = NULL;
-        int noMove = -1;
-        int socketCopy = socket;
-        int n = write(socketCopy, &noMove, sizeof(noMove))
+        char *noMove = "-1";
+        int n = write(clientDetails.getClientSocket(), &noMove, sizeof(noMove))
         if (n == -1) {
-
+            throw "no move";
         }
         return;
     }
 
     if (firstRun) {
-
         // The first turn in the game player1 play.
         printer.printNextPlayerMove(player1, playerPossibleMoves);
 
@@ -92,7 +90,8 @@ void RemoteGameManager::playOneTurn() {
         }
         // Get a point from the player.
         lastMove = new Point(player1.getMove(gameState));
-        result = gameRules.makeMove(gameState, *lastMove, PLAYER_1);
+        gameRules.makeMove(gameState, *lastMove, PLAYER_1);
+
         firstRun = false;
 
         gameRules.makePossibleMoves(gameState, PLAYER_2);
@@ -108,7 +107,7 @@ void RemoteGameManager::playOneTurn() {
 
             printer.printNextPlayerMove(player1, playerPossibleMoves);
             lastMove = new Point(player1.getMove(gameState));
-            result = gameRules.makeMove(gameState, *lastMove, PLAYER_1);
+            gameRules.makeMove(gameState, *lastMove, PLAYER_1);
             gameRules.makePossibleMoves(gameState, PLAYER_2);
 
         } else {

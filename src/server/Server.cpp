@@ -71,6 +71,9 @@ void Server::start() {
                 close(clientSocket1);
                 close(clientSocket2);
             }
+            if(strcmp("-1",move) == 0){
+                int n = read(clientSocket2,&move,sizeof(move));
+            }
             break;
         }
 

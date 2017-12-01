@@ -8,18 +8,19 @@
 
 
 #include "GameManager.h"
+#include "../Client.h"
 
 class RemoteGameManager : public GameManager {
 
 public:
     RemoteGameManager(GameState &gameState, Player &player1, Player &player2, Printer &printer,
-                      GameRules &gameRulesm, int socket1);
+                      GameRules &gameRulesm, Client client1);
+    const Client &getClientDetails() const;
 
 private:
     void run();
     void playOneTurn();
-
-    int socket;
+    Client clientDetails;
 
 };
 
