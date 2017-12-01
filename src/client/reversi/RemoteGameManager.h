@@ -14,13 +14,15 @@ class RemoteGameManager : public GameManager {
 
 public:
     RemoteGameManager(GameState &gameState, Player &player1, Player &player2, Printer &printer,
-                      GameRules &gameRulesm, Client client1);
-    const Client &getClientDetails() const;
+                      GameRules &gameRules, Client client1);
+
+    void setCurrentPlayer(int playerNumber);
+    void run();
 
 private:
-    void run();
     void playOneTurn();
     Client clientDetails;
+    int translatePointFromServer();
 
 };
 

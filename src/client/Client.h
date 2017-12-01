@@ -10,16 +10,15 @@ class Client {
 public:
     Client(const char *serverIP, int serverPort);
     void connectToServer();
-    int sendPoint(int arg1, char op, int arg2);
+    void sendPoint(int x, int y);
     int getPriority();
-    void stop();
     int getClientSocket() const;
 
+    int priority;
 private:
     const char *serverIP;
     int serverPort;
     int clientSocket;
-    int priority;
 };
 
 

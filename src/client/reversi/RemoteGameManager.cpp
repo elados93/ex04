@@ -5,23 +5,23 @@
 
 #include <iostream>
 #include <unistd.h>
+#include <cstring>
+#include <cstdlib>
 #include "RemoteGameManager.h"
+#include "HumanPlayer.h"
 
 RemoteGameManager::RemoteGameManager(GameState &gameState, Player &player1, Player &player2, Printer &printer,
-                                     GameRules &gameRules, int socket1) :
-                                     GameManager(gameState, player1, player2,
-                                                 printer, gameRules, false), Client(client1) {}
+                                     GameRules &gameRules, Client client1) :
+        GameManager(gameState, player1, player2,
+                    printer, gameRules, false), clientDetails(client1) {
+
+}
 
 void RemoteGameManager::run() {
     status status1 = checkStatus();
 
     while (status1 == RUNNING) {
         playOneTurn();
-        if (currentPlayer == &player1) {
-            currentPlayer = &player2;
-        } else {
-            currentPlayer = &player1;
-        }
         status1 = checkStatus();
     }
 
@@ -46,7 +46,8 @@ void RemoteGameManager::run() {
     delete (lastMove);
 
     char buffer[4] = "END";
-    int n = write(clientDetails.getClientSocket(), &buffer, sizeof(buffer));
+    int socket = clientDetails.getClientSocket();
+    int n = write(socket, &buffer, sizeof(buffer));
     if (n == -1)
         throw "Error sending end of game to server";
 }
@@ -55,13 +56,22 @@ void RemoteGameManager::playOneTurn() {
     printer.printBoard();
     vector<Point *> playerPossibleMoves;
 
-    if (currentPlayer == &player1) {
+    owner currentOwner, otherOwner; // Representing the enum for the current player.
+    Player *otherPlayer = &player1;
+    if (clientDetails.priority == 1) {// in case the player is player_1
         playerPossibleMoves = gameRules.getPossibleMoves(gameState, PLAYER_1);
-    } else {
+        currentOwner = PLAYER_1;
+        otherOwner = PLAYER_2;
+        otherPlayer = &player2;
+    } else { // in case the player is player_1
         playerPossibleMoves = gameRules.getPossibleMoves(gameState, PLAYER_2);
+        currentOwner = PLAYER_2;
+        otherOwner = PLAYER_1;
+        otherPlayer = &player1;
     }
 
-    // If the game v.s the computer and it's player1 turn OR 2 humans are playing aware they have no move.
+
+    // If the possible moves vector is empty send -1 to the server.
     if (playerPossibleMoves.empty()) {
         printer.printLastMove(*currentPlayer, lastMove);
         printer.printNextPlayerMove(*currentPlayer, playerPossibleMoves); // sending empty vector and print "NO MOVE"
@@ -74,74 +84,103 @@ void RemoteGameManager::playOneTurn() {
 
         lastMove = NULL;
         char *noMove = "-1";
-        int n = write(clientDetails.getClientSocket(), &noMove, sizeof(noMove))
+        int socketCopy = clientDetails.getClientSocket();
+        int n = write(socketCopy, &noMove, sizeof(noMove));
         if (n == -1) {
-            throw "no move";
+            throw "Can't send no move back to server";
         }
         return;
     }
-
+    //first run ever in the two clients game
     if (firstRun) {
-        // The first turn in the game player1 play.
-        printer.printNextPlayerMove(player1, playerPossibleMoves);
+        if (currentOwner == PLAYER_1) {
 
-        if (lastMove != NULL) {
-            delete (lastMove);
+            // The first turn in the game player1 play.
+            printer.printNextPlayerMove(*currentPlayer, playerPossibleMoves);
+
+            // Get a point from the player.
+            lastMove = new Point(currentPlayer->getMove(gameState));
+            gameRules.makeMove(gameState, *lastMove, currentOwner);
+            // sending the move to the server
+            clientDetails.sendPoint(lastMove->getX(), lastMove->getY());
         }
-        // Get a point from the player.
-        lastMove = new Point(player1.getMove(gameState));
-        gameRules.makeMove(gameState, *lastMove, PLAYER_1);
-
-        firstRun = false;
-
-        gameRules.makePossibleMoves(gameState, PLAYER_2);
-    } else { // It's not the first turn in the game.
-
-        if (currentPlayer == &player1) {
-
-            // Player 1 turn.
-            printer.printLastMove(player2, lastMove);
-            if (lastMove != NULL) {
+        // First run for second player
+        if (currentOwner == PLAYER_2) {
+            // updating the board according the other players move
+            if (translatePointFromServer() == 1) {
+                gameRules.makeMove(gameState, *lastMove, otherOwner);
+                gameRules.makePossibleMoves(gameState, currentOwner);
+            }
+            if (lastMove != NULL)
                 delete (lastMove);
-            }
-
-            printer.printNextPlayerMove(player1, playerPossibleMoves);
+            // making a move for the current player.
             lastMove = new Point(player1.getMove(gameState));
-            gameRules.makeMove(gameState, *lastMove, PLAYER_1);
-            gameRules.makePossibleMoves(gameState, PLAYER_2);
+            gameRules.makeMove(gameState, *lastMove, currentOwner);
+            clientDetails.sendPoint(lastMove->getX(), lastMove->getY());
+        }
+    } // end of first run
+    else {
+        //  a regular move in which we update the board first and than play by the current player.
+        if (translatePointFromServer() != -1)
+            printer.printLastMove(*otherPlayer, lastMove);
 
-        } else {
-            // Player 2 turn.
-            if (isAIPlayer) {
-                if (lastMove != NULL) {
-                    delete (lastMove);
-                }
+        gameRules.makeMove(gameState, *lastMove, otherOwner);
+        gameRules.makePossibleMoves(gameState, currentOwner);
 
-                lastMove = new Point(player2.getMove(gameState));
+        printer.printNextPlayerMove(*currentPlayer, playerPossibleMoves);
 
-                if (!lastMove->isEqual(Point(-1, -1))) { // Check the option of AIPlayer which has no moves.
-                    result = gameRules.makeMove(gameState, *lastMove, PLAYER_2);
-                    gameRules.makePossibleMoves(gameState, PLAYER_1);
-                } else
-                    result = SUCCESS; // AIPlayer didn't player but the show must go on.
-            } else { // The option where player 2 is human.
-                printer.printLastMove(player1, lastMove);
+        if (lastMove != NULL)
+            delete (lastMove);
 
-                if (lastMove != NULL) {
-                    delete (lastMove);
-                }
+        lastMove = new Point(currentPlayer->getMove(gameState));
+        gameRules.makeMove(gameState, *lastMove, currentOwner);
+        clientDetails.sendPoint(lastMove->getX(), lastMove->getY());
+    }
+    // making sure the o player will not have a first run
+    firstRun = false;
+}
 
-                printer.printNextPlayerMove(player2, playerPossibleMoves);
+void RemoteGameManager::setCurrentPlayer(int playerNumber) {
+    if (playerNumber == 1)
+        currentPlayer = &player1;
+    if (playerNumber == 2)
+        currentPlayer = &player2;
+}
 
-                lastMove = new Point(player2.getMove(gameState));
+int RemoteGameManager::translatePointFromServer() {
 
-                result = gameRules.makeMove(gameState, *lastMove, PLAYER_2);
+    char *xValue, *yValue;
+    char dummyComma;
+    int socket = clientDetails.getClientSocket();
 
-                gameRules.makePossibleMoves(gameState, PLAYER_1);
-            }
+    // Read new move arguments from Src client.
+    int n = read(socket, &xValue, sizeof(xValue));
+    if (n == -1)
+        throw "Error reading x value from Src client";
 
-        } // End Player2 flow.
+    if (strcmp(xValue, "-1") == 0) {
 
+        if (lastMove != NULL)
+            delete (lastMove);
+
+        lastMove = new Point(-1, -1);
+        return -1;
     }
 
+    // Get the comma separator
+    n = read(socket, &dummyComma, sizeof(dummyComma));
+    if (n == -1)
+        throw "Error reading dummy comma from Src client";
+
+    // Get the y value
+    n = read(socket, &yValue, sizeof(yValue));
+    if (n == -1)
+        throw "Error reading y value from Src client";
+
+    if (lastMove != NULL)
+        delete (lastMove);
+
+    lastMove = new Point(atoi(xValue), atoi(yValue));
+    return 1;
 }
+

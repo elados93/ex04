@@ -19,7 +19,7 @@ public:
     /**
      * Run the game until there is a winner or draw situation.
      */
-    void run();
+    virtual void run();
 
 protected:
     GameState &gameState;

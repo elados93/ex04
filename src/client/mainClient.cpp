@@ -9,6 +9,7 @@
 #include "reversi/AIPlayer.h"
 #include "reversi/ConsolePrinter.h"
 #include "reversi/GameManager.h"
+#include "reversi/RemoteGameManager.h"
 #include <iostream>
 
 using namespace std;
@@ -45,11 +46,6 @@ int main() {
             break;
         }
         case 3: {
-            ConsolePrinter printer3(*board, p1, p3);
-            GameManager game3(gameState1, p1, p3, printer3, *gameRules, false);
-
-            int row, col;
-            char dummy;
 
             Client client("127.0.0.1", 4444);
             try {
@@ -58,26 +54,11 @@ int main() {
                 cout << "Failed to connect to server. Reason: " << msg << endl;
                 return 0;
             }
+            ConsolePrinter printer3(*board, p1, p3);
+            RemoteGameManager game3(gameState1, p1, p3, printer3, *gameRules, client);
+            game3.setCurrentPlayer(client.getPriority());
 
-            client.getPriority();
-
-            while (true) { // while the game is running
-
-
-                cout << "Enter a point (e.g. 3,4):";
-                cin >> row >> dummy >> col;
-
-                cout << "Sending point: " << row << dummy
-                     << col << endl;
-                try {
-                    int result = client.sendPoint(row, dummy, col);
-                    cout << "Result: " << result << endl;
-                } catch (const char *msg) {
-                    cout << "Failed to send point to server. Reason: " << msg << endl;
-                }
-
-                break;
-            }
+            game3.run();
         }
 
         default: {
