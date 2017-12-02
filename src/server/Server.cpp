@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <iostream>
-#include <stdio.h>
 
 #define MAX_CONNECTED_CLIENTS 10
 
@@ -63,12 +62,13 @@ void Server::start() {
 
         while (true) { // Play the game with 2 players
 
-            if (handleClient(clientSocket1, clientSocket2) == 0)
+            if (handleClient(clientSocket1, clientSocket2) != 1)
                 break;
-            if (handleClient(clientSocket2, clientSocket1) == 0)
+            if (handleClient(clientSocket2, clientSocket1) != 1)
                 break;
         }
 
+    stop();
 
     } // end of listening to clients
 
@@ -77,7 +77,7 @@ void Server::start() {
 
 // Handle requests from a specific client
 int Server::handleClient(int clientSocketSrc, int clientSocketDst) {
-    char *xValue, *yValue;
+    int xValue, yValue;
     char dummyComma;
 
     // Read new move arguments from Src client.
@@ -89,7 +89,7 @@ int Server::handleClient(int clientSocketSrc, int clientSocketDst) {
         cout << "Client disconnected" << endl;
         return -1;
     }
-    if (strcmp(xValue, "-1") == 0) {
+    if (xValue == -1) {
         cout << "Client Src didn't played" << endl;
         n = write(clientSocketDst, &xValue, sizeof(xValue));
         if (n == -1)
@@ -99,7 +99,7 @@ int Server::handleClient(int clientSocketSrc, int clientSocketDst) {
     }
 
     // close all the connections if the game ended
-    if (strcmp(xValue, "END") == 0) {
+    if (xValue == -2) {
         close(clientSocketSrc);
         close(clientSocketDst);
         return 0; // return 0 to signify end of game
@@ -122,11 +122,11 @@ int Server::handleClient(int clientSocketSrc, int clientSocketDst) {
     if (n == -1)
         throw "Error writing x value back to Dst client";
 
-    n = write(clientSocketSrc, &dummyComma, sizeof(dummyComma));
+    n = write(clientSocketDst, &dummyComma, sizeof(dummyComma));
     if (n == -1)
         throw "Error reading dummy comma from Dst client";
 
-    n = write(clientSocketSrc, &yValue, sizeof(yValue));
+    n = write(clientSocketDst, &yValue, sizeof(yValue));
     if (n == -1)
         throw "Error reading y value from Dst client";
 

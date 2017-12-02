@@ -12,7 +12,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <unistd.h>
-#include <cstring>
+#include <string.h>
 
 using namespace std;
 
@@ -57,15 +57,7 @@ void Client::connectToServer() {
 
 void Client::sendPoint(int x, int y) {
 
-    ostringstream ostringstream1;
-    ostringstream1 << x;
-    string xString = ostringstream1.str();
-
-    ostringstream ostringstream2;
-    ostringstream2 << y;
-    string yString = ostringstream2.str();
-
-    int n1 = write(clientSocket, &xString, sizeof(xString));
+    int n1 = write(clientSocket, &x, sizeof(x));
     if (n1 == -1)
         throw "Error writing x value to socket";
 
@@ -74,7 +66,7 @@ void Client::sendPoint(int x, int y) {
     if (n1 == -1)
         throw "Error writing comma dummy to socket";
 
-    n1 = write(clientSocket, &yString, sizeof(yString));
+    n1 = write(clientSocket, &y, sizeof(y));
     if (n1 == -1)
         throw "Error writing y value to socket";
 

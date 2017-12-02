@@ -1,17 +1,16 @@
 
 // Created by Elad Aharon on 01/12/17.
 // ID: 311200786
-//
 
 #include <iostream>
 #include <unistd.h>
-#include <cstring>
 #include <cstdlib>
 #include "RemoteGameManager.h"
-#include "HumanPlayer.h"
+#include <string.h>
+#include <sstream>
 
 RemoteGameManager::RemoteGameManager(GameState &gameState, Player &player1, Player &player2, Printer &printer,
-                                     GameRules &gameRules, Client client1) :
+                                     GameRules &gameRules, Client &client1) :
         GameManager(gameState, player1, player2,
                     printer, gameRules, false), clientDetails(client1) {
 
@@ -45,25 +44,26 @@ void RemoteGameManager::run() {
 
     delete (lastMove);
 
-    char buffer[4] = "END";
+    int stopGame = -2;
     int socket = clientDetails.getClientSocket();
-    int n = write(socket, &buffer, sizeof(buffer));
+    int n = write(socket, &stopGame, sizeof(stopGame));
     if (n == -1)
         throw "Error sending end of game to server";
 }
 
 void RemoteGameManager::playOneTurn() {
-    printer.printBoard();
+    if (!(firstRun && clientDetails.priority == 2))
+        printer.printBoard();
     vector<Point *> playerPossibleMoves;
 
     owner currentOwner, otherOwner; // Representing the enum for the current player.
-    Player *otherPlayer = &player1;
+    Player *otherPlayer;
     if (clientDetails.priority == 1) {// in case the player is player_1
         playerPossibleMoves = gameRules.getPossibleMoves(gameState, PLAYER_1);
         currentOwner = PLAYER_1;
         otherOwner = PLAYER_2;
         otherPlayer = &player2;
-    } else { // in case the player is player_1
+    } else { // in case the player is player_2
         playerPossibleMoves = gameRules.getPossibleMoves(gameState, PLAYER_2);
         currentOwner = PLAYER_2;
         otherOwner = PLAYER_1;
@@ -78,17 +78,16 @@ void RemoteGameManager::playOneTurn() {
         char dummy; // Input any key from the user
         cin >> dummy;
 
-        if (lastMove != NULL) {
+        if (lastMove != NULL)
             delete (lastMove);
-        }
 
         lastMove = NULL;
-        char *noMove = "-1";
+        int noMove = -1;
         int socketCopy = clientDetails.getClientSocket();
         int n = write(socketCopy, &noMove, sizeof(noMove));
-        if (n == -1) {
+        if (n == -1)
             throw "Can't send no move back to server";
-        }
+
         return;
     }
     //first run ever in the two clients game
@@ -149,7 +148,7 @@ void RemoteGameManager::setCurrentPlayer(int playerNumber) {
 
 int RemoteGameManager::translatePointFromServer() {
 
-    char *xValue, *yValue;
+    int xValue, yValue;
     char dummyComma;
     int socket = clientDetails.getClientSocket();
 
@@ -158,7 +157,7 @@ int RemoteGameManager::translatePointFromServer() {
     if (n == -1)
         throw "Error reading x value from Src client";
 
-    if (strcmp(xValue, "-1") == 0) {
+    if (xValue == -1) {
 
         if (lastMove != NULL)
             delete (lastMove);
@@ -180,7 +179,8 @@ int RemoteGameManager::translatePointFromServer() {
     if (lastMove != NULL)
         delete (lastMove);
 
-    lastMove = new Point(atoi(xValue), atoi(yValue));
+    
+    lastMove = new Point(xValue, yValue);
     return 1;
 }
 

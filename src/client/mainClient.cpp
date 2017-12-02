@@ -28,8 +28,8 @@ int main() {
     menuConsole->printMenu(); // Print the 3 options to the client.
     delete (menuConsole);
 
-    int inputAIGameOrNot;
-    cin >> inputAIGameOrNot;
+    int inputAIGameOrNot = 3;
+    //cin >> inputAIGameOrNot;
 
     switch (inputAIGameOrNot) {
         case 1: {
@@ -55,8 +55,9 @@ int main() {
                 return 0;
             }
             ConsolePrinter printer3(*board, p1, p3);
+            int priorityClient = client.getPriority();
             RemoteGameManager game3(gameState1, p1, p3, printer3, *gameRules, client);
-            game3.setCurrentPlayer(client.getPriority());
+            game3.setCurrentPlayer(priorityClient);
 
             game3.run();
         }

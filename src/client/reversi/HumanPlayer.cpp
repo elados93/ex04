@@ -14,10 +14,10 @@ HumanPlayer :: HumanPlayer(char s) {
 
 Point HumanPlayer::getMove(GameState &gameState) {
     int x,y;
+    char dummy;
 
     while (true) {
-        cout << "Enter a number: ";
-        cin >> x >> y;
+        cin >> x >> dummy >> y;
 
         if (!cin.fail()) {
             cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); //skip bad input
