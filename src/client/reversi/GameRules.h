@@ -18,20 +18,20 @@ class GameRules {
 public:
 
     virtual ~GameRules() {};
+
     /**
      *  Make the vector of possible moves of "symbol" and also returns it.
      *  Notice the difference with getPossibleMoves function that's only returns it.
      * @param symbol The player.
-     * @return The vector of possible points of symbol.
      */
-    virtual vector<Point *> makePossibleMoves(GameState &gameState, owner symbol) = 0;
+    virtual void makePossibleMoves(GameState &gameState, owner symbol) = 0;
 
     /**
  * Returns the possible moves of "symbol"
  * @param symbol The player.
  * @return Possible moves of symbol.
  */
-    virtual vector<Point *> getPossibleMoves(GameState &gameState, owner symbol) = 0;
+    virtual vector<Point *> *getPossibleMoves(GameState &gameState, owner symbol) = 0;
 
     /**
      * Make a single move of "symbol" at point p.

@@ -62,13 +62,12 @@ void Server::start() {
 
         while (true) { // Play the game with 2 players
 
-            if (handleClient(clientSocket1, clientSocket2) != 1)
+            if (handleClient(clientSocket1, clientSocket2, 1) != 1)
                 break;
-            if (handleClient(clientSocket2, clientSocket1) != 1)
+            if (handleClient(clientSocket2, clientSocket1, 2) != 1)
                 break;
         }
 
-    stop();
 
     } // end of listening to clients
 
@@ -76,12 +75,12 @@ void Server::start() {
 
 
 // Handle requests from a specific client
-int Server::handleClient(int clientSocketSrc, int clientSocketDst) {
+int Server::handleClient(int clientSocketSrc, int clientSocketDst, int srcPriority) {
     int xValue, yValue;
     char dummyComma;
 
     // Read new move arguments from Src client.
-    int n = read(clientSocketSrc, xValue, sizeof(xValue));
+    int n = read(clientSocketSrc, &xValue, sizeof(xValue));
     if (n == -1)
         throw "Error reading x value from Src client";
 
@@ -90,8 +89,8 @@ int Server::handleClient(int clientSocketSrc, int clientSocketDst) {
         return -1;
     }
     if (xValue == -1) {
-        cout << "Client Src didn't played" << endl;
-        n = write(clientSocketDst, xValue, sizeof(xValue));
+        cout << "Client " << srcPriority << " didn't played" << endl;
+        n = write(clientSocketDst, &xValue, sizeof(xValue));
         if (n == -1)
             throw "Can't write no possible moves to Dst client";
 
@@ -100,6 +99,8 @@ int Server::handleClient(int clientSocketSrc, int clientSocketDst) {
 
     // close all the connections if the game ended
     if (xValue == -2) {
+        int winner = 3 - srcPriority; // Calculate the winner priority
+        cout << "End of game! The winner is: Player #" << winner;
         close(clientSocketSrc);
         close(clientSocketDst);
         return 0; // return 0 to signify end of game
@@ -115,7 +116,8 @@ int Server::handleClient(int clientSocketSrc, int clientSocketDst) {
     if (n == -1)
         throw "Error reading y value from Src client";
 
-    cout << "Got move: " << xValue << dummyComma << yValue << endl;
+    cout << "Got move: " << (xValue + 1) << dummyComma << (yValue + 1) <<
+                                                                       " From Player #" << srcPriority << endl;
 
     // Write back to the other client.
     n = write(clientSocketDst, &xValue, sizeof(xValue));

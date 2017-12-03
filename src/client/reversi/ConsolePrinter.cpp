@@ -154,16 +154,16 @@ void ConsolePrinter::printInformingGameStarted(owner currentOwner) {
         cout << "Waiting for Player #2 move" << endl << endl;
     }
     else{
-        cout << "Game started, waiting for player #1 move" << endl;
+        cout << "Game started, waiting for player #1 move" << endl << endl;
     }
 
 }
 
 void ConsolePrinter::printWaitingForOtherPlayer(owner currentOwner) {
     if(currentOwner == PLAYER_1){
-        cout << "Waiting for Player #2 move" << endl;
+        cout << "Waiting for Player #2 move" << endl << endl;
     }
     else{
-        cout << "waiting for player #1 move" << endl;
+        cout << "waiting for player #1 move" << endl << endl;
     }
 }

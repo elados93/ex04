@@ -10,7 +10,7 @@ GameState::GameState(Board *board1) : board(board1) {}
 GameState::GameState(GameState &gameState) {
     //creates a new board like the board of the game state we get.
     board = new Board(*gameState.board);
-
+    
     // creating the same vectors of the options of the player as the game state parameter.
     for (unsigned int i = 0; i < gameState.vec1.size(); i++) {
         Point *pointToBeAdded = new Point(*gameState.vec1.at(i));

@@ -56,7 +56,13 @@ void Client::connectToServer() {
 
 
 void Client::sendPoint(int x, int y) {
-
+    // check if the wanted point is -1 -1 and the player has no moves.
+    if (x == -1 && y == -1) {
+        int n1 = write(clientSocket, &x, sizeof(x));
+        if (n1 == -1)
+            throw "Error writing x value to socket";
+        return;
+    }
     int n1 = write(clientSocket, &x, sizeof(x));
     if (n1 == -1)
         throw "Error writing x value to socket";

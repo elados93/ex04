@@ -15,7 +15,7 @@ public:
 private:
     int port;
     int serverSocket; // the socket's file descriptor
-    int handleClient(int clientSocketSrc, int clientSocketDsc);
+    int handleClient(int clientSocketSrc, int clientSocketDsc, int srcPriority);
 
     void giveClientPriority(int socket1, int socket2);
 };

@@ -48,14 +48,14 @@ Point AIPlayer::getMove(GameState &gameState) {
 
 int AIPlayer::playDemo(GameState &demoGame) {
     GameState demoComputerGame(demoGame);
-
-    vector<Point*> humanVector = gameRules.makePossibleMoves(demoGame, PLAYER_1);// gets all the possible moves of the human player
+    gameRules.makePossibleMoves(demoGame, PLAYER_1);
+    vector<Point*> *humanVector = gameRules.getPossibleMoves(demoGame, PLAYER_1);// gets all the possible moves of the human player
     //after one of the AI players options.
 
-    int scores[humanVector.size()];
+    int scores[humanVector->size()];
 
-    for (unsigned int i = 0; i < humanVector.size(); ++i) {
-        gameRules.makeMove(demoComputerGame, *humanVector.at(i) , PLAYER_1); // Make a possible move of the human player.
+    for (unsigned int i = 0; i < humanVector->size(); ++i) {
+        gameRules.makeMove(demoComputerGame, *humanVector->at(i) , PLAYER_1); // Make a possible move of the human player.
 
         Point counters = demoComputerGame.board->countOwner(); // Counts the players differences in the game.
         scores[i] = counters.getX() - counters.getY(); // Store that value in scores.

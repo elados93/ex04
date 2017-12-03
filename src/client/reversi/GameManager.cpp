@@ -86,8 +86,8 @@ void GameManager::run() {
         if (winner == PLAYER_2)
             printer.printEndOfGame(player2, status1);
 
-        char dummy;
-        cin >> dummy;
+        string dummy;
+        getline(cin, dummy);
     }
 
     if (status1 == DRAW)
@@ -104,7 +104,7 @@ void GameManager::playOneTurn() {
         printer.printBoard();
 
     possible_outcome result;
-    vector<Point *> playerPossibleMoves;
+    vector<Point *> *playerPossibleMoves;
 
     if (currentPlayer == &player1) {
         playerPossibleMoves = gameRules.getPossibleMoves(gameState, PLAYER_1);
@@ -113,12 +113,12 @@ void GameManager::playOneTurn() {
     }
 
     // If the game v.s the computer and it's player1 turn OR 2 humans are playing aware they have no move.
-    if ((!isAIPlayer && playerPossibleMoves.empty()) ||
-        (isAIPlayer && playerPossibleMoves.empty() && currentPlayer == &player1)) {
+    if ((!isAIPlayer && playerPossibleMoves->empty()) ||
+        (isAIPlayer && playerPossibleMoves->empty() && currentPlayer == &player1)) {
         printer.printLastMove(*currentPlayer, lastMove);
-        printer.printNextPlayerMove(*currentPlayer, playerPossibleMoves);
-        char dummy; // Input any key from the user
-        cin >> dummy;
+        printer.printNextPlayerMove(*currentPlayer, *playerPossibleMoves);
+        string dummy; // Input any key from the user
+        getline(cin, dummy);
 
         if (lastMove != NULL) {
             delete (lastMove);
@@ -131,7 +131,7 @@ void GameManager::playOneTurn() {
     if (firstRun) {
 
         // The first turn in the game player1 play.
-        printer.printNextPlayerMove(player1, playerPossibleMoves);
+        printer.printNextPlayerMove(player1, *playerPossibleMoves);
 
         if (lastMove != NULL) {
             delete (lastMove);
@@ -152,7 +152,7 @@ void GameManager::playOneTurn() {
                 delete (lastMove);
             }
 
-            printer.printNextPlayerMove(player1, playerPossibleMoves);
+            printer.printNextPlayerMove(player1, *playerPossibleMoves);
             lastMove = new Point(player1.getMove(gameState));
             result = gameRules.makeMove(gameState, *lastMove, PLAYER_1);
             gameRules.makePossibleMoves(gameState, PLAYER_2);
@@ -178,7 +178,7 @@ void GameManager::playOneTurn() {
                     delete (lastMove);
                 }
 
-                printer.printNextPlayerMove(player2, playerPossibleMoves);
+                printer.printNextPlayerMove(player2, *playerPossibleMoves);
 
                 lastMove = new Point(player2.getMove(gameState));
 

@@ -20,14 +20,14 @@ public:
      * @param symbol The current player.
      * @return The possible moves vector.
      */
-    vector<Point*> makePossibleMoves(GameState &gameState, owner symbol);
+    void makePossibleMoves(GameState &gameState, owner symbol);
 
     /**
  * Returns the possible moves of "symbol"
  * @param symbol The player.
  * @return Possible moves of symbol.
  */
-    vector<Point*> getPossibleMoves(GameState &gameState, owner symbol);
+    vector<Point *> * getPossibleMoves(GameState &gameState, owner symbol);
 
     /**
      * Make a single move of "symbol" at point p.

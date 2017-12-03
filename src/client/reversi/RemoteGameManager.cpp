@@ -27,37 +27,41 @@ void RemoteGameManager::run() {
     printer.printBoard();
     printer.printLastMove(*currentPlayer, lastMove);
 
+    owner winner = getWinner();
+    owner currentOwner = currentPlayer == &player1 ? PLAYER_1 : PLAYER_2;
     if (checkStatus() == WIN) {
-        owner winner = getWinner();
         if (winner == PLAYER_1)
             printer.printEndOfGame(player1, status1);
-
         if (winner == PLAYER_2)
             printer.printEndOfGame(player2, status1);
-
-        char dummy;
-        cin >> dummy;
     }
 
     if (status1 == DRAW)
         printer.printEndOfGame(player1, DRAW);
 
-    delete (lastMove);
+    // Get any key to terminate the game
+    string dummy;
+    getline(cin, dummy);
 
-    int stopGame = -2;
-    int socket = clientDetails.getClientSocket();
-    int n = write(socket, &stopGame, sizeof(stopGame));
-    if (n == -1)
-        throw "Error sending end of game to server";
+    // The looser needs to send the END OF GAME message
+    if (currentOwner != winner) {
+        int stopGame = -2;
+        int socket = clientDetails.getClientSocket();
+        int n = write(socket, &stopGame, sizeof(stopGame));
+        if (n == -1)
+            throw "Error sending end of game to server";
+    }
+
+    delete (lastMove);
 }
 
 void RemoteGameManager::playOneTurn() {
-    if (!(firstRun && clientDetails.priority == 2))
-        printer.printBoard();
-    vector<Point *> playerPossibleMoves;
 
-    owner currentOwner, otherOwner; // Representing the enum for the current player.
-    Player *otherPlayer;
+    vector<Point *> *playerPossibleMoves;
+
+    owner currentOwner, otherOwner; // Representing the enum for the current player & other player.
+    Player *otherPlayer; // Representing the pointer to the other player.
+
     if (clientDetails.priority == 1) {// in case the player is player_1
         playerPossibleMoves = gameRules.getPossibleMoves(gameState, PLAYER_1);
         currentOwner = PLAYER_1;
@@ -70,69 +74,86 @@ void RemoteGameManager::playOneTurn() {
         otherPlayer = &player1;
     }
 
-
-    // If the possible moves vector is empty send -1 to the server.
-    if (playerPossibleMoves.empty()) {
-        printer.printLastMove(*currentPlayer, lastMove);
-        printer.printNextPlayerMove(*currentPlayer, playerPossibleMoves); // sending empty vector and print "NO MOVE"
-        char dummy; // Input any key from the user
-        cin >> dummy;
-
-        if (lastMove != NULL)
-            delete (lastMove);
-
-        lastMove = NULL;
-        int noMove = -1;
-        int socketCopy = clientDetails.getClientSocket();
-        int n = write(socketCopy, &noMove, sizeof(noMove));
-        if (n == -1)
-            throw "Can't send no move back to server";
-
-        return;
-    }
     //first run ever in the two clients game
     if (firstRun) {
+        
+        printer.printBoard();
+        
         if (currentOwner == PLAYER_1) {
 
             // The first turn in the game player1 play.
-            printer.printNextPlayerMove(*currentPlayer, playerPossibleMoves);
+            printer.printNextPlayerMove(*currentPlayer, *playerPossibleMoves);
 
             // Get a point from the player.
             lastMove = new Point(currentPlayer->getMove(gameState));
             gameRules.makeMove(gameState, *lastMove, currentOwner);
+            printer.printBoard();
             // sending the move to the server
             clientDetails.sendPoint(lastMove->getX(), lastMove->getY());
         }
         // First run for second player
         if (currentOwner == PLAYER_2) {
+            printer.printWaitingForOtherPlayer(currentOwner);
             // updating the board according the other players move
             if (translatePointFromServer() == 1) {
                 gameRules.makeMove(gameState, *lastMove, otherOwner);
                 gameRules.makePossibleMoves(gameState, currentOwner);
+                printer.printBoard(); // print the board after the changes of player1
             }
+            
+            printer.printLastMove(*otherPlayer, lastMove);
+            printer.printNextPlayerMove(*currentPlayer, *playerPossibleMoves);
             if (lastMove != NULL)
                 delete (lastMove);
-            // making a move for the current player.
+            // making a move for the second player.
             lastMove = new Point(player1.getMove(gameState));
             gameRules.makeMove(gameState, *lastMove, currentOwner);
+            printer.printBoard();
             clientDetails.sendPoint(lastMove->getX(), lastMove->getY());
         }
     } // end of first run
     else {
-        //  a regular move in which we update the board first and than play by the current player.
-        if (translatePointFromServer() != -1)
-            printer.printLastMove(*otherPlayer, lastMove);
+        // a regular move in which we update the board first and than play by the current player.
+        printer.printWaitingForOtherPlayer(currentOwner);
+        if (translatePointFromServer() != -1) {
+            gameRules.makeMove(gameState, *lastMove, otherOwner);
+
+            // In case the game end after the opponent move.
+            if (checkStatus() != RUNNING)
+                return;
+
+            gameRules.makePossibleMoves(gameState, currentOwner);
+            printer.printBoard(); // print the board after the changes of player1
+        }
+
+        printer.printLastMove(*otherPlayer, lastMove);
+
+        // If the possible moves vector is empty send -1 to the server.
+        if (playerPossibleMoves->empty()) {
+            printer.printNextPlayerMove(*currentPlayer, *playerPossibleMoves); // sending empty vector and print "NO MOVE"
+            string dummy; // Input any key from the user
+            getline(cin, dummy);
+
+            if (lastMove != NULL)
+                delete (lastMove);
+
+            lastMove = NULL;
+            clientDetails.sendPoint(-1, -1);
+            return;
+        }
 
         gameRules.makeMove(gameState, *lastMove, otherOwner);
+        printer.printBoard();
         gameRules.makePossibleMoves(gameState, currentOwner);
 
-        printer.printNextPlayerMove(*currentPlayer, playerPossibleMoves);
+        printer.printNextPlayerMove(*currentPlayer, *playerPossibleMoves);
 
         if (lastMove != NULL)
             delete (lastMove);
 
         lastMove = new Point(currentPlayer->getMove(gameState));
         gameRules.makeMove(gameState, *lastMove, currentOwner);
+        printer.printBoard();
         clientDetails.sendPoint(lastMove->getX(), lastMove->getY());
     }
     // making sure the o player will not have a first run
@@ -157,6 +178,7 @@ int RemoteGameManager::translatePointFromServer() {
     if (n == -1)
         throw "Error reading x value from Src client";
 
+    // -1 meaning the player has no moves.
     if (xValue == -1) {
 
         if (lastMove != NULL)

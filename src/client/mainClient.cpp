@@ -28,8 +28,8 @@ int main() {
     menuConsole->printMenu(); // Print the 3 options to the client.
     delete (menuConsole);
 
-    int inputAIGameOrNot = 3;
-    //cin >> inputAIGameOrNot;
+    int inputAIGameOrNot;
+    cin >> inputAIGameOrNot;
 
     switch (inputAIGameOrNot) {
         case 1: {
@@ -47,7 +47,7 @@ int main() {
         }
         case 3: {
 
-            Client client("127.0.0.01", 4444);
+            Client client("127.0.0.1", 4444);
             try {
                 client.connectToServer();
             } catch (const char *msg) {
@@ -61,6 +61,7 @@ int main() {
             game3.setCurrentPlayer(priorityClient);
 
             game3.run();
+            break;
         }
 
         default: {

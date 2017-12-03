@@ -53,11 +53,11 @@ possible_outcome ReversiDefaultRules::makeMove(GameState &gameState, Point &p, o
     return SUCCESS;
 }
 
-vector<Point *> ReversiDefaultRules::getPossibleMoves(GameState &gameState, owner symbol) {
-    return symbol == PLAYER_1 ? gameState.vec1 : gameState.vec2;
+vector<Point *> * ReversiDefaultRules::getPossibleMoves(GameState &gameState, owner symbol) {
+    return symbol == PLAYER_1 ? (&gameState.vec1) : (&gameState.vec2);
 }
 
-vector<Point*> ReversiDefaultRules :: makePossibleMoves(GameState &gameState, owner symbol) {
+void ReversiDefaultRules :: makePossibleMoves(GameState &gameState, owner symbol) {
 
     // Free all the previous allocations of the possible points.
     freePointsInVec(gameState, symbol);
@@ -69,13 +69,10 @@ vector<Point*> ReversiDefaultRules :: makePossibleMoves(GameState &gameState, ow
         for(int j = 0;j < col;j++) {
             Point p(i, j);
             owner currentSymbol = (*gameState.board).getCell(p).getSymbol();
-            if (currentSymbol == symbol) { // Check only the relevant cells.
+            if (currentSymbol == symbol)  // Check only the relevant cells.
                 checkSurround(gameState, p, symbol);
-            }
         }
     }
-
-    return symbol == PLAYER_1 ? gameState.vec1 : gameState.vec2;
 }
 
 void ReversiDefaultRules :: checkSurround(GameState &gameState, Point &p, owner symbol) {
@@ -95,20 +92,16 @@ void ReversiDefaultRules :: checkSurround(GameState &gameState, Point &p, owner 
             }
 
             Point currentPoint(r + dRow, c + dCol);
-            if (!(*gameState.board).isInBoard(currentPoint)) {
-                continue;
+            if ((*gameState.board).isInBoard(currentPoint)) {
+            
+                Cell currentCell = (*gameState.board).getCell(currentPoint);
+                owner otherSymbol = currentCell.getSymbol();
+
+                // Check if the near cell belongs to the other player.
+                if (isLegal(gameState, currentPoint) && otherSymbol != symbol && currentCell.isCellActive()) 
+                    moveAlong(gameState, currentPoint, otherSymbol, dRow, dCol);
             }
-
-            Cell currentCell = (*gameState.board).getCell(currentPoint);
-            owner otherSymbol = currentCell.getSymbol();
-
-            // Check if the near cell belongs to the other player.
-            if (isLegal(gameState, currentPoint) && otherSymbol != symbol && currentCell.isCellActive()) {
-                moveAlong(gameState, currentPoint, otherSymbol, dRow, dCol);
-            }
-
             dCol++;
-
         }
         dRow++;
     }
@@ -149,9 +142,9 @@ void ReversiDefaultRules :: moveAlong(GameState &gameState, Point &p ,owner symb
                 gameState.vec1.push_back(wantedPoint);
             }
         } else {
-            vector <Point *> currentPlayerVector = getPossibleMoves(gameState, currentSymbol);
+            vector <Point *> *currentPlayerVector = getPossibleMoves(gameState, currentSymbol);
             // Although the points is in the vector, it might have another direction to move along.
-            Point *pointToAddFlow = getPointFromVec(p, currentPlayerVector);
+            Point *pointToAddFlow = getPointFromVec(p, *currentPlayerVector);
             pointToAddFlow->insertFlowPoint(flowPoint);
         }
     }
