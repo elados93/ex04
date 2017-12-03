@@ -146,5 +146,24 @@ void ConsolePrinter::printMenu() {
     cout << "Choose an opponent type:" << endl;
     cout << "1. a human local player" << endl;
     cout << "2. an AIPlayer" << endl;
-    cout << "3. a remote player" << endl;
+    cout << "3. a remote player" << endl << endl;
+}
+
+void ConsolePrinter::printInformingGameStarted(owner currentOwner) {
+    if(currentOwner == PLAYER_1){
+        cout << "Waiting for Player #2 move" << endl << endl;
+    }
+    else{
+        cout << "Game started, waiting for player #1 move" << endl;
+    }
+
+}
+
+void ConsolePrinter::printWaitingForOtherPlayer(owner currentOwner) {
+    if(currentOwner == PLAYER_1){
+        cout << "Waiting for Player #2 move" << endl;
+    }
+    else{
+        cout << "waiting for player #1 move" << endl;
+    }
 }

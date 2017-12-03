@@ -51,6 +51,10 @@ public:
   */
     void printMenu();
 
+    void printInformingGameStarted(owner currentOwner);
+
+    void printWaitingForOtherPlayer(owner currentOwner);
+
 private:
     Board &board;
     Player &player1; // A reference to player 1 from GameManager.

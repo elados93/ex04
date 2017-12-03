@@ -81,7 +81,7 @@ int Server::handleClient(int clientSocketSrc, int clientSocketDst) {
     char dummyComma;
 
     // Read new move arguments from Src client.
-    int n = read(clientSocketSrc, &xValue, sizeof(xValue));
+    int n = read(clientSocketSrc, xValue, sizeof(xValue));
     if (n == -1)
         throw "Error reading x value from Src client";
 
@@ -91,7 +91,7 @@ int Server::handleClient(int clientSocketSrc, int clientSocketDst) {
     }
     if (xValue == -1) {
         cout << "Client Src didn't played" << endl;
-        n = write(clientSocketDst, &xValue, sizeof(xValue));
+        n = write(clientSocketDst, xValue, sizeof(xValue));
         if (n == -1)
             throw "Can't write no possible moves to Dst client";
 

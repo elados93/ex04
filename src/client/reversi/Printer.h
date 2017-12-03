@@ -21,6 +21,9 @@ public:
     virtual void printEndOfGame(Player &p, status status1) = 0;
     virtual void printError(possible_outcome outcome) = 0;
     virtual void printMenu() = 0;
+    virtual void printInformingGameStarted(owner currentOwner) = 0;
+    virtual void printWaitingForOtherPlayer(owner currentOwner) = 0;
+
 };
 
 

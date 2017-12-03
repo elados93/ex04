@@ -47,7 +47,7 @@ int main() {
         }
         case 3: {
 
-            Client client("127.0.0.1", 4444);
+            Client client("127.0.0.01", 4444);
             try {
                 client.connectToServer();
             } catch (const char *msg) {
@@ -56,6 +56,7 @@ int main() {
             }
             ConsolePrinter printer3(*board, p1, p3);
             int priorityClient = client.getPriority();
+            printer3.printInformingGameStarted(client.priority == 1 ? PLAYER_1 : PLAYER_2);
             RemoteGameManager game3(gameState1, p1, p3, printer3, *gameRules, client);
             game3.setCurrentPlayer(priorityClient);
 
