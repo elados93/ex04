@@ -1,5 +1,5 @@
 
-// Created by Elad Aharon on 28/11/17.
+// Created by Elad Aharon & Shahar Palmor on 28/11/17.
 // ID: 311200786
 
 #include "Client.h"
@@ -11,12 +11,15 @@
 #include "reversi/GameManager.h"
 #include "reversi/RemoteGameManager.h"
 #include <iostream>
+#include <fstream>
+
+Client * getClientFromFile();
 
 using namespace std;
 
 int main() {
 
-    Board *board = new Board(4, 4);
+    Board *board = new Board();
     GameState gameState1(board);
     ReversiDefaultRules *gameRules = new ReversiDefaultRules();
 
@@ -46,21 +49,21 @@ int main() {
             break;
         }
         case 3: {
-
-            Client client("127.0.0.1", 4444);
+            Client *client = getClientFromFile();
             try {
-                client.connectToServer();
+                client->connectToServer();
             } catch (const char *msg) {
                 cout << "Failed to connect to server. Reason: " << msg << endl;
                 return 0;
             }
             ConsolePrinter printer3(*board, p1, p3);
-            int priorityClient = client.getPriority();
-            printer3.printInformingGameStarted(client.priority == 1 ? PLAYER_1 : PLAYER_2);
-            RemoteGameManager game3(gameState1, p1, p3, printer3, *gameRules, client);
+            int priorityClient = client->getPriority();
+            printer3.printInformingGameStarted(client->priority == 1 ? PLAYER_1 : PLAYER_2);
+            RemoteGameManager game3(gameState1, p1, p3, printer3, *gameRules, *client);
             game3.setCurrentPlayer(priorityClient);
 
             game3.run();
+            delete(client);
             break;
         }
 
@@ -75,4 +78,27 @@ int main() {
     delete (gameRules);
 
     return 0;
+}
+
+Client *getClientFromFile() {
+    ifstream inFile;
+    inFile.open("../settings.txt");
+    if (!inFile)
+        throw "Error opening the settings file!";
+    else {
+        int port;
+        string dummy, ip;
+
+        inFile >> dummy;
+        inFile >> dummy;
+        inFile >> ip;
+        inFile >> dummy;
+        inFile >> dummy;
+
+        inFile >> port;
+
+        Client *client = new Client(ip.c_str(), port);
+        inFile.close();
+        return client;
+    }
 }

@@ -170,7 +170,6 @@ void RemoteGameManager::setCurrentPlayer(int playerNumber) {
 int RemoteGameManager::translatePointFromServer() {
 
     int xValue, yValue;
-    char dummyComma;
     int socket = clientDetails.getClientSocket();
 
     // Read new move arguments from Src client.
@@ -187,11 +186,6 @@ int RemoteGameManager::translatePointFromServer() {
         lastMove = new Point(-1, -1);
         return -1;
     }
-
-    // Get the comma separator
-    n = read(socket, &dummyComma, sizeof(dummyComma));
-    if (n == -1)
-        throw "Error reading dummy comma from Src client";
 
     // Get the y value
     n = read(socket, &yValue, sizeof(yValue));

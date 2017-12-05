@@ -3,9 +3,7 @@ project(ex04)
 
 set(CMAKE_CXX_STANDARD 98)
 
-include_directories(src/client/reversi)
-
-set(SOURCE_FILES src/client/Client.cpp src/client/Client.h
+set(REMOTE_FILES src/client/Client.cpp src/client/Client.h
         src/server/Server.cpp src/server/Server.h)
 
 set(REVERSI_FILES src/client/reversi/AIPlayer.cpp src/client/reversi/AIPlayer.h
@@ -20,6 +18,6 @@ set(REVERSI_FILES src/client/reversi/AIPlayer.cpp src/client/reversi/AIPlayer.h
         src/client/reversi/HumanPlayer.cpp src/client/reversi/HumanPlayer.h src/client/reversi/Point.cpp
         src/client/reversi/Point.h src/client/reversi/RemoteGameManager.cpp src/client/reversi/RemoteGameManager.h)
 
-add_executable(Client ${SOURCE_FILES} ${REVERSI_FILES} src/client/mainClient.cpp)
+add_executable(Client ${REMOTE_FILES} ${REVERSI_FILES} src/client/mainClient.cpp)
 
-add_executable(Server ${SOURCE_FILES} src/server/mainServer.cpp)
+add_executable(Server ${REMOTE_FILES} src/server/mainServer.cpp)

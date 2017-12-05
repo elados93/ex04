@@ -1,12 +1,11 @@
 
-// Created by Elad Aharon on 28/11/17.
+// Created by Elad Aharon & Shahar Palmor.
 // ID: 311200786
 
 #include "Server.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <string.h>
 #include <iostream>
 
 #define MAX_CONNECTED_CLIENTS 10
@@ -97,7 +96,7 @@ int Server::handleClient(int clientSocketSrc, int clientSocketDst, int srcPriori
         return 1;
     }
 
-    // close all the connections if the game ended
+    // -2 signify signal to close all the connections if the game ended
     if (xValue == -2) {
         int winner = 3 - srcPriority; // Calculate the winner priority
         cout << "End of game! The winner is: Player #" << winner;
@@ -105,11 +104,6 @@ int Server::handleClient(int clientSocketSrc, int clientSocketDst, int srcPriori
         close(clientSocketDst);
         return 0; // return 0 to signify end of game
     }
-
-    // Get the comma separator
-    n = read(clientSocketSrc, &dummyComma, sizeof(dummyComma));
-    if (n == -1)
-        throw "Error reading dummy comma from Src client";
 
     // Get the y value
     n = read(clientSocketSrc, &yValue, sizeof(yValue));
@@ -123,10 +117,6 @@ int Server::handleClient(int clientSocketSrc, int clientSocketDst, int srcPriori
     n = write(clientSocketDst, &xValue, sizeof(xValue));
     if (n == -1)
         throw "Error writing x value back to Dst client";
-
-    n = write(clientSocketDst, &dummyComma, sizeof(dummyComma));
-    if (n == -1)
-        throw "Error reading dummy comma from Dst client";
 
     n = write(clientSocketDst, &yValue, sizeof(yValue));
     if (n == -1)

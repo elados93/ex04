@@ -1,5 +1,5 @@
 
-// Created by Elad Aharon on 28/11/17.
+// Created by Elad Aharon & Shahar Palmor.
 // ID: 311200786
 //
 
@@ -18,7 +18,7 @@ using namespace std;
 
 Client::Client(const char *serverIP, int serverPort) :
         serverIP(serverIP), serverPort(serverPort),
-        clientSocket(0) {
+        clientSocket(0), priority(0) {
     cout << "Client" << endl;
 }
 
@@ -66,11 +66,6 @@ void Client::sendPoint(int x, int y) {
     int n1 = write(clientSocket, &x, sizeof(x));
     if (n1 == -1)
         throw "Error writing x value to socket";
-
-    char commaDummy = ',';
-    n1 = write(clientSocket, &commaDummy, sizeof(commaDummy));
-    if (n1 == -1)
-        throw "Error writing comma dummy to socket";
 
     n1 = write(clientSocket, &y, sizeof(y));
     if (n1 == -1)
