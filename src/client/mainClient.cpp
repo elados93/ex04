@@ -19,7 +19,7 @@ using namespace std;
 
 int main() {
 
-    Board *board = new Board();
+    Board *board = new Board(4, 4);
     GameState gameState1(board);
     ReversiDefaultRules *gameRules = new ReversiDefaultRules();
 
@@ -80,6 +80,10 @@ int main() {
     return 0;
 }
 
+/**
+ * get IP adress and port from file to the client.
+ * @return a new client.
+ */
 Client *getClientFromFile() {
     ifstream inFile;
     inFile.open("../settings.txt");

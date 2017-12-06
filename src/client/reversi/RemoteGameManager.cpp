@@ -12,9 +12,7 @@
 RemoteGameManager::RemoteGameManager(GameState &gameState, Player &player1, Player &player2, Printer &printer,
                                      GameRules &gameRules, Client &client1) :
         GameManager(gameState, player1, player2,
-                    printer, gameRules, false), clientDetails(client1) {
-
-}
+                    printer, gameRules, false), clientDetails(client1) {}
 
 void RemoteGameManager::run() {
     status status1 = checkStatus();
@@ -101,7 +99,7 @@ void RemoteGameManager::playOneTurn() {
                 printer.printBoard(); // print the board after the changes of player1
             }
             
-            printer.printLastMove(*otherPlayer, lastMove);
+            printer.printLastMove(*otherPlayer, lastMove); //prints other player last move
             printer.printNextPlayerMove(*currentPlayer, *playerPossibleMoves);
             if (lastMove != NULL)
                 delete (lastMove);
@@ -115,16 +113,20 @@ void RemoteGameManager::playOneTurn() {
     else {
         // a regular move in which we update the board first and than play by the current player.
         printer.printWaitingForOtherPlayer(currentOwner);
-        if (translatePointFromServer() != -1) {
-            gameRules.makeMove(gameState, *lastMove, otherOwner);
-
+        if (translatePointFromServer() == -1) {
             // In case the game end after the opponent move.
             if (checkStatus() != RUNNING)
                 return;
-
-            gameRules.makePossibleMoves(gameState, currentOwner);
-            printer.printBoard(); // print the board after the changes of player1
-        }
+        } else  {
+            gameRules.makeMove(gameState, *lastMove, otherOwner);
+            // In case the game end after the opponent move.
+            if (checkStatus() != RUNNING)
+                return;
+        } // The other player played something
+        
+        
+        
+        printer.printBoard(); // print the board after the changes of player1
 
         printer.printLastMove(*otherPlayer, lastMove);
 
@@ -139,22 +141,18 @@ void RemoteGameManager::playOneTurn() {
 
             lastMove = NULL;
             clientDetails.sendPoint(-1, -1);
-            return;
+        } else { // The player has at least one move.
+            gameRules.makePossibleMoves(gameState, currentOwner);
+            printer.printNextPlayerMove(*currentPlayer, *playerPossibleMoves);
+
+            if (lastMove != NULL)
+                delete (lastMove);
+
+            lastMove = new Point(currentPlayer->getMove(gameState));
+            gameRules.makeMove(gameState, *lastMove, currentOwner);
+            printer.printBoard();
+            clientDetails.sendPoint(lastMove->getX(), lastMove->getY());
         }
-
-        gameRules.makeMove(gameState, *lastMove, otherOwner);
-        printer.printBoard();
-        gameRules.makePossibleMoves(gameState, currentOwner);
-
-        printer.printNextPlayerMove(*currentPlayer, *playerPossibleMoves);
-
-        if (lastMove != NULL)
-            delete (lastMove);
-
-        lastMove = new Point(currentPlayer->getMove(gameState));
-        gameRules.makeMove(gameState, *lastMove, currentOwner);
-        printer.printBoard();
-        clientDetails.sendPoint(lastMove->getX(), lastMove->getY());
     }
     // making sure the o player will not have a first run
     firstRun = false;

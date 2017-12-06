@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <iostream>
+#include <string.h>
 
 #define MAX_CONNECTED_CLIENTS 10
 
@@ -25,8 +26,7 @@ void Server::start() {
 
     // Assign a local address to the socket
     struct sockaddr_in serverAddress;
-    bzero((void *) &serverAddress,
-          sizeof(serverAddress));
+    bzero((void *) &serverAddress,sizeof(serverAddress));
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_addr.s_addr = INADDR_ANY;
     serverAddress.sin_port = htons(port);
@@ -99,7 +99,7 @@ int Server::handleClient(int clientSocketSrc, int clientSocketDst, int srcPriori
     // -2 signify signal to close all the connections if the game ended
     if (xValue == -2) {
         int winner = 3 - srcPriority; // Calculate the winner priority
-        cout << "End of game! The winner is: Player #" << winner;
+        cout << "End of game! The winner is: Player #" << winner << endl;
         close(clientSocketSrc);
         close(clientSocketDst);
         return 0; // return 0 to signify end of game
@@ -110,7 +110,7 @@ int Server::handleClient(int clientSocketSrc, int clientSocketDst, int srcPriori
     if (n == -1)
         throw "Error reading y value from Src client";
 
-    cout << "Got move: " << (xValue + 1) << dummyComma << (yValue + 1) <<
+    cout << "Got move: " << (xValue + 1) << ", " << (yValue + 1) <<
                                                                        " From Player #" << srcPriority << endl;
 
     // Write back to the other client.

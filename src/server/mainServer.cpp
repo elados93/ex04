@@ -23,6 +23,10 @@ int main() {
     }
 }
 
+/**
+ * get the port of the connection with the server from the file.
+ * @return the port.
+ */
 int getPortFromFile() {
     ifstream inFile;
     inFile.open("../settings.txt");

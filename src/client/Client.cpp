@@ -63,6 +63,7 @@ void Client::sendPoint(int x, int y) {
             throw "Error writing x value to socket";
         return;
     }
+    // tranfering the info from playOneturn to the server.
     int n1 = write(clientSocket, &x, sizeof(x));
     if (n1 == -1)
         throw "Error writing x value to socket";
@@ -76,7 +77,7 @@ void Client::sendPoint(int x, int y) {
 
 int Client::getPriority() {
     int result;
-    int n = read(clientSocket, &result, sizeof(result));
+    int n = read(clientSocket, &result, sizeof(result));// result is holding the priority given by the server.
     if (n == -1)
         throw "Error reading priority from server";
 
