@@ -6,8 +6,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <iostream>
-#include <string.h>
+#include <fstream>
+#include <sstream>
+#include <cstdlib>
 
 #define MAX_CONNECTED_CLIENTS 10
 
@@ -20,9 +21,8 @@ Server::Server(int port) : port(port), serverSocket(0) {
 void Server::start() {
     // Create a socket point
     serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if (serverSocket == -1) {
+    if (serverSocket == -1)
         throw "Error opening socket";
-    }
 
     // Assign a local address to the socket
     struct sockaddr_in serverAddress;
@@ -31,9 +31,9 @@ void Server::start() {
     serverAddress.sin_addr.s_addr = INADDR_ANY;
     serverAddress.sin_port = htons(port);
     if (bind(serverSocket, (struct sockaddr
-    *) &serverAddress, sizeof(serverAddress)) == -1) {
+    *) &serverAddress, sizeof(serverAddress)) == -1)
         throw "Error on binding";
-    }
+
     // Start listening to incoming connections
     listen(serverSocket, MAX_CONNECTED_CLIENTS);
     // Define the client socket's structures
@@ -76,7 +76,6 @@ void Server::start() {
 // Handle requests from a specific client
 int Server::handleClient(int clientSocketSrc, int clientSocketDst, int srcPriority) {
     int xValue, yValue;
-    char dummyComma;
 
     // Read new move arguments from Src client.
     int n = read(clientSocketSrc, &xValue, sizeof(xValue));
@@ -146,3 +145,25 @@ void Server::giveClientPriority(int socket1, int socket2) {
         return;
     }
 }
+
+int Server :: getPortFromFile(string fileName) {
+    try {
+        const char *serverSettingsFileName = fileName.c_str();
+        ifstream fileInput(serverSettingsFileName);
+        if (fileInput == NULL)
+            perror("Error while open the server settings file");
+
+        string portString;
+        getline(fileInput, portString); // just skip the ip line
+        getline(fileInput, portString);
+        portString = portString.replace(0, sizeof("port = ") - 1, "");
+        stringstream stringstream1(portString);
+        int port = 0;
+        stringstream1 >> port;
+        return port;
+    } catch (char* ex) {
+        cout << "error while reading settings file";
+        exit(-1);
+    }
+}
+

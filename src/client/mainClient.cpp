@@ -1,5 +1,5 @@
 
-// Created by Elad Aharon & Shahar Palmor on 28/11/17.
+// Created by Elad Aharon & Shahar Palmor
 // ID: 311200786
 
 #include "Client.h"
@@ -12,14 +12,17 @@
 #include "reversi/RemoteGameManager.h"
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <stdlib.h>
 
-Client * getClientFromFile();
+
+Client * getClientFromFile(string fileName);
 
 using namespace std;
 
 int main() {
 
-    Board *board = new Board(4, 4);
+    Board *board = new Board();
     GameState gameState1(board);
     ReversiDefaultRules *gameRules = new ReversiDefaultRules();
 
@@ -49,7 +52,7 @@ int main() {
             break;
         }
         case 3: {
-            Client *client = getClientFromFile();
+            Client *client = getClientFromFile("settings.txt");
             try {
                 client->connectToServer();
             } catch (const char *msg) {
@@ -78,31 +81,4 @@ int main() {
     delete (gameRules);
 
     return 0;
-}
-
-/**
- * get IP adress and port from file to the client.
- * @return a new client.
- */
-Client *getClientFromFile() {
-    ifstream inFile;
-    inFile.open("../settings.txt");
-    if (!inFile)
-        throw "Error opening the settings file!";
-    else {
-        int port;
-        string dummy, ip;
-
-        inFile >> dummy;
-        inFile >> dummy;
-        inFile >> ip;
-        inFile >> dummy;
-        inFile >> dummy;
-
-        inFile >> port;
-
-        Client *client = new Client(ip.c_str(), port);
-        inFile.close();
-        return client;
-    }
 }

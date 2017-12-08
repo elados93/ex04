@@ -1,5 +1,5 @@
 
-// Created by Elad Aharon on 01/12/17.
+// Created by Elad Aharon Shahar Palmor
 // ID: 311200786
 
 #include <iostream>
@@ -8,6 +8,7 @@
 #include "RemoteGameManager.h"
 #include <string.h>
 #include <sstream>
+#include <fstream>
 
 RemoteGameManager::RemoteGameManager(GameState &gameState, Player &player1, Player &player2, Printer &printer,
                                      GameRules &gameRules, Client &client1) :
@@ -196,5 +197,32 @@ int RemoteGameManager::translatePointFromServer() {
     
     lastMove = new Point(xValue, yValue);
     return 1;
+}
+
+Client * getClientFromFile(string fileName) {
+    try {
+        const char *serverSettingsFileName = fileName.c_str();
+        ifstream fileInput(serverSettingsFileName);
+        if (fileInput == NULL)
+            perror("Error while open the server settings file");
+
+        string IPString;
+        string portString;
+        getline(fileInput, IPString);
+        getline(fileInput, portString);
+        IPString = IPString.replace(0, sizeof("serverIP = ") - 1, "");
+        IPString = IPString.replace(0, 0, "");
+        portString = portString.replace(0, sizeof("port = ") - 1, "");
+        stringstream stringstream1(portString);
+        int port = 0;
+        stringstream1 >> port;
+        char *writable = new char[IPString.size() + 1];
+        std::copy(IPString.begin(), IPString.end(), writable);
+        writable[IPString.size()] = '\0';
+        return new Client(writable, port);
+    } catch (char* ex) {
+        cout << "error while reading settings file";
+        exit(-1);
+    }
 }
 

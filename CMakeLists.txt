@@ -3,6 +3,8 @@ project(ex04)
 
 set(CMAKE_CXX_STANDARD 98)
 
+include_directories(src/client/reversi)
+
 set(REMOTE_FILES src/client/Client.cpp src/client/Client.h
         src/server/Server.cpp src/server/Server.h)
 

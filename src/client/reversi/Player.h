@@ -1,4 +1,4 @@
-// Created by Elad Aharon & Shahar Palmor on 28/10/17.
+// Created by Elad Aharon & Shahar Palmor.
 // ID: 311200786 307929927
 
 #ifndef EX02_PLAYER_H

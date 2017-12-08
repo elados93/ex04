@@ -6,12 +6,19 @@
 #ifndef EX04_SERVER_H
 #define EX04_SERVER_H
 
+#include <string.h>
+#include <iostream>
+
+using namespace std;
 
 class Server {
 public:
     Server(int port);
     void start();
     void stop();
+
+    static int getPortFromFile(string fileName);
+
 private:
     int port;
     int serverSocket; // the socket's file descriptor

@@ -32,7 +32,7 @@ void Client::connectToServer() {
     struct hostent *server;
 
     struct in_addr address;
-    inet_pton(AF_INET, "127.0.0.1", &address);
+    inet_pton(AF_INET, serverIP, &address);
 
     server = gethostbyaddr((const void *) &address, sizeof address, AF_INET);
 
@@ -54,7 +54,6 @@ void Client::connectToServer() {
     cout << "Connected to server" << endl << "Waiting for the other players..." << endl;
 }
 
-
 void Client::sendPoint(int x, int y) {
     // check if the wanted point is -1 -1 and the player has no moves.
     if (x == -1 && y == -1) {
@@ -74,7 +73,6 @@ void Client::sendPoint(int x, int y) {
 
 }
 
-
 int Client::getPriority() {
     int result;
     int n = read(clientSocket, &result, sizeof(result));// result is holding the priority given by the server.
@@ -89,9 +87,6 @@ int Client::getClientSocket() const {
     return clientSocket;
 }
 
-
-
-
-
-
-
+Client::~Client() {
+    delete(serverIP);
+}

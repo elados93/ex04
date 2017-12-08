@@ -9,6 +9,9 @@
 class Client {
 public:
     Client(const char *serverIP, int serverPort);
+
+    virtual ~Client();
+
     void connectToServer();
 
     /**
