@@ -1,6 +1,6 @@
 
 // Created by Elad Aharon & Shahar Palmor.
-// ID: 311200786
+// ID: 311200786 307929927
 
 #include "Server.h"
 #include <sys/socket.h>
@@ -111,7 +111,6 @@ int Server::handleClient(int clientSocketSrc, int clientSocketDst, int srcPriori
 
     cout << "Got move: " << (xValue + 1) << ", " << (yValue + 1) <<
                                                                        " From Player #" << srcPriority << endl;
-
     // Write back to the other client.
     n = write(clientSocketDst, &xValue, sizeof(xValue));
     if (n == -1)
@@ -154,7 +153,6 @@ int Server :: getPortFromFile(string fileName) {
             perror("Error while open the server settings file");
 
         string portString;
-        getline(fileInput, portString); // just skip the ip line
         getline(fileInput, portString);
         portString = portString.replace(0, sizeof("port = ") - 1, "");
         stringstream stringstream1(portString);

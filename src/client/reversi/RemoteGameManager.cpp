@@ -1,6 +1,6 @@
 
 // Created by Elad Aharon Shahar Palmor
-// ID: 311200786
+// ID: 311200786 307929927
 
 #include <iostream>
 #include <unistd.h>
@@ -201,8 +201,8 @@ int RemoteGameManager::translatePointFromServer() {
 
 Client * getClientFromFile(string fileName) {
     try {
-        const char *serverSettingsFileName = fileName.c_str();
-        ifstream fileInput(serverSettingsFileName);
+        const char *clientSettingsFileName = fileName.c_str();
+        ifstream fileInput(clientSettingsFileName);
         if (fileInput == NULL)
             perror("Error while open the server settings file");
 

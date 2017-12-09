@@ -1,6 +1,6 @@
 
 // Created by Elad Aharon & Shahar Palmor
-// ID: 311200786
+// ID: 311200786 307929927
 
 #include "Client.h"
 #include "reversi/Board.h"
@@ -11,9 +11,6 @@
 #include "reversi/GameManager.h"
 #include "reversi/RemoteGameManager.h"
 #include <iostream>
-#include <fstream>
-#include <sstream>
-#include <stdlib.h>
 
 
 Client * getClientFromFile(string fileName);
@@ -52,7 +49,7 @@ int main() {
             break;
         }
         case 3: {
-            Client *client = getClientFromFile("settings.txt");
+            Client *client = getClientFromFile("settingsClient.txt");
             try {
                 client->connectToServer();
             } catch (const char *msg) {
